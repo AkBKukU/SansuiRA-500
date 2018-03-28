@@ -4,18 +4,34 @@ uint16_t inputLevel[2] = {0.0,0.0}; // 0 = right, 1 = left
 uint16_t inputRaw[2][2];
 uint16_t inputRawReady[2][2];
 
-float measuredAverageVoltage = 1.76;
+float measuredAverageVoltage = 2;
 uint16_t offsetMidpoint = (measuredAverageVoltage / 5) * 1024;
 
-
+#define LED_COUNT 10
+uint8_t leds[LED_COUNT] = {2,3,4,5,6,7,8,9,10,11};
 
 void setup()
 {
 	Serial.begin(115200);
 	resetRaw();
 	inputRaw[0][0] = 0;
+	
+	
+	for (uint8_t i = 0; i < LED_COUNT; ++i) {
+		pinMode(leds[i], OUTPUT);
+	}
+	
+	for (uint8_t i = 0; i < LED_COUNT; ++i) {
+		digitalWrite(leds[i], HIGH);
+	}
 }
 
+void resetLEDs()
+{
+	for (uint8_t i = 0; i < LED_COUNT; ++i) {
+		digitalWrite(leds[i], LOW);
+	}
+}
 
 void loop()
 {
@@ -28,18 +44,22 @@ void loop()
 	*/
 
 	uint16_t input = analogRead(A0);
-	if (input > offsetMidpoint)
-		inputRaw[0][0] = iir(inputRaw[0][0],input-offsetMidpoint,0.5);
+	inputRaw[0][0] = iir(inputRaw[0][0],input,0.9);
 	//Serial.print(input);
 	//Serial.print(" : ");
-	Serial.print(inputRaw[0][0]);
+/*	Serial.print(inputRaw[0][0]);
 	Serial.print(" : ");
-	int scale = inputRaw[0][0] / 2;
+	int scale = input / 2;
 	Serial.print(scale);
 	Serial.print(" : ");
-
+*/
 	for(int i = 0; i < scale ; ++i )
 		Serial.print("=");
+	
+	resetLEDs();
+	int ledScale = input / 15;
+	for(int i = 0; i < ledScale ; ++i)
+		digitalWrite(leds[i], HIGH);
 
 	Serial.println();
 }
